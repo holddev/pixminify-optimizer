@@ -12,18 +12,18 @@ export const PreviewImageItem: React.FC<Props> = ({ item, onDelete }) => {
 
   return (
     <>
-      <li className=" rounded-md border-b-[1px] py-2 border-solid border-white flex items-center">
+      <li className=" rounded-md border-b-[1px] py-1 px-2 border-solid flex items-center hover:bg-primary/40">
         <div className="flex items-center justify-start gap-x-4 w-[70%] ">
           <img className="size-16 object-cover object-center" src={URL.createObjectURL(item.image)} alt={name} />
           <span className="text-start">{name}</span>
         </div>
         <div className="flex items-center justify-between w-[30%]">
-          <span className="text-slate-300 font-semibold">{formatFileSize(size)}</span>
+          <span className=" font-semibold">{formatFileSize(size)}</span>
           <button
             className="px-4"
             onClick={() => { onDelete({ id: item.id }) }}
           >
-            <Trash class="size-7 text-slate-200 hover:text-red-500 transition-colors duration-300" />
+            <Trash class="size-7 hover:text-red-500 transition-colors duration-300" />
           </button>
         </div>
       </li >

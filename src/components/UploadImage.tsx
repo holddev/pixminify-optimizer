@@ -76,10 +76,10 @@ export const UploadImage = () => {
 
 
   return (
-    <>
-      <form className="text-white pt-20" >
+    <main className="mb-12">
+      <form className="text-light-text_primary dark:text-dark-text_primary pt-20" >
         <div
-          className={` w-full h-[40vh] p-8 border-dashed border-[3px] rounded-full 
+          className={`relative w-full h-[40vh] p-8 border-dashed border-[3px] rounded-full 
         text-center cursor-pointer flex items-center justify-center transition-colors duration-500
         ${isDrag ? 'bg-[#b5ff9031] border-white' : 'bg-gradient-to-b from-[#0000] to-[#b5ff901e] border-primary'}`}
           onClick={() => { }}
@@ -88,6 +88,13 @@ export const UploadImage = () => {
           onDragOver={handleOnDragOver}
           onDragLeave={handleOnDragLeave}
         >
+          <pixel-canvas
+            class="absolute top-0 left-0 rounded-full -z-10"
+            data-gap="13"
+            data-speed="40"
+            data-colors="#4bff0a, #333333, #fef08a"
+          />
+
           <label htmlFor="fileInput" className={`${isDrag && 'text-primary'}
         text-xl flex flex-col items-center justify-center cursor-pointer`}>
             {isDrag ?
@@ -114,13 +121,9 @@ export const UploadImage = () => {
           />
         </div>
       </form>
-      <section>
-        <ul>
-          {
-            showImage && <PreviewImagesList images={images} handleOnDelete={handleOnDelete} />
-          }
-        </ul>
-      </section>
-    </>
+      {
+        showImage && <PreviewImagesList images={images} handleOnDelete={handleOnDelete} />
+      }
+    </main>
   )
 }
