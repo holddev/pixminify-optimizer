@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import { Arrow } from "./Icons"
 import { PreviewImagesList } from "./PreviewImages"
 import { Image, ImageID } from "../types/types"
+import { MAX_LENGTH_IMAGES } from "../utils/utils"
 
 export const UploadImage = () => {
 
@@ -9,6 +10,7 @@ export const UploadImage = () => {
   const [images, setImages] = useState<Image[]>([])
   const [showImage, setShowImage] = useState<boolean>(false)
   const dragCounter = useRef(0);
+  const dialogRef = useRef<HTMLDialogElement | null>(null)
 
   console.log(images)
 
@@ -29,6 +31,13 @@ export const UploadImage = () => {
       alert('ingrese solo imagenes')
     }
 
+    if (validFiles.length > MAX_LENGTH_IMAGES) {
+      dialogRef.current?.showModal();
+      setShowImage(false)
+      setIsDrag(false)
+      return;
+    }
+
     setImages(() => {
       return [...validFiles]
     })
@@ -45,6 +54,13 @@ export const UploadImage = () => {
 
     if (validFiles.length === 0) {
       alert('ingrese solo imagenes')
+    }
+
+    if (validFiles.length > MAX_LENGTH_IMAGES) {
+      dialogRef.current?.showModal();
+      setShowImage(false)
+      setIsDrag(false)
+      return;
     }
 
     setImages(() => {
@@ -117,13 +133,34 @@ export const UploadImage = () => {
             accept="image/*"
             multiple
             className="hidden"
-            onChange={handleChange}
+            onChange={(handleChange)}
           />
         </div>
       </form>
       {
         showImage && <PreviewImagesList images={images} handleOnDelete={handleOnDelete} />
       }
-    </main>
+
+      <dialog
+        ref={dialogRef}
+        className="py-2 px-4 absolute top-2 left-[50%] -translate-x-1/2 
+        rounded-md shadow-primary shadow-md dark:bg-white/80 bg-black/70
+        dark:text-light-text_primary text-dark-text_primary"
+      >
+        <div
+          className="flex flex-col justify-center gap-4 items-center"
+        >
+          <p>Debe insertar menos de {MAX_LENGTH_IMAGES} imagenes</p>
+          <button
+            className="dark:bg-black/20 bg-white/90 rounded-full w-fit px-2 py-1 
+              dark:text-dark-text_primary text-light-text_primary"
+            autoFocus
+            onClick={() => dialogRef.current?.close()}
+          >
+            Aceptar
+          </button>
+        </div>
+      </dialog>
+    </main >
   )
 }
