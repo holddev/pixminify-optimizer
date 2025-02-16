@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Image, ImageID } from "../types/types";
 import { PreviewImageItem } from "./PreviewImagesItem";
-import { compressImage } from "../lib/ImageCompression";
 import { useState } from "react";
 import { Download } from "./Icons";
 import JSZip from "jszip";
@@ -13,24 +12,26 @@ interface Props {
 
 export const PreviewImagesList: React.FC<Props> = ({ images, handleOnDelete }) => {
 
-  const [imagesCompressed, setImagesCompresed] = useState<File[]>([])
+  const [imagesCompressed, setImagesCompresed] = useState<Image[]>([])
 
 
-  const handleOnCompressImage = async (image: Image) => {
-    const imageCompressed = await compressImage({ imageFile: image.image })
-    if (!imageCompressed) return
+  const handleUpdateImages = async (file: Image) => {
     setImagesCompresed((prev) => {
-      return [...prev,
-        imageCompressed
-      ]
+      return prev.some(({ id }) => id === file.id)
+        ? prev.map((img) => img.id === file.id ? file : img) // reemplaza
+        : [...prev, file] // crea uno nuevo
     })
-    return imageCompressed
+  }
+
+  const handleDeleteImage = ({ id }: ImageID) => {
+    handleOnDelete({ id: id })
+    setImagesCompresed(prev => prev.filter((img) => img.id !== id))
   }
 
   const handleDowmloadAllImages = async () => {
     const zip = new JSZip()
     imagesCompressed.forEach((image) => {
-      zip.file(image.name, image);
+      zip.file(image.image.name, image.image);
     });
     const zipBlob = await zip.generateAsync({ type: "blob" });
 
@@ -43,7 +44,6 @@ export const PreviewImagesList: React.FC<Props> = ({ images, handleOnDelete }) =
     document.body.removeChild(a);
     URL.revokeObjectURL(zipUrl);
   }
-
 
   const navigate = useNavigate()
 
@@ -75,8 +75,8 @@ export const PreviewImagesList: React.FC<Props> = ({ images, handleOnDelete }) =
               <PreviewImageItem
                 item={image}
                 key={image.id}
-                onDelete={handleOnDelete}
-                onCompressImage={handleOnCompressImage}
+                onDelete={handleDeleteImage}
+                onUpdateImages={handleUpdateImages}
               />
             )
           })}
