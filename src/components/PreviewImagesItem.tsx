@@ -1,46 +1,69 @@
 import { useEffect, useState } from "react"
 import { Image, ImageID } from "../types/types"
-import { formatFileSize } from "../utils/utils"
-import { Download, Trash } from "./Icons"
+import { formatFiles, formatFileSize } from "../utils/utils"
+import { ChevronDown, Download, Trash } from "./Icons"
 import { BounceLoader } from "react-spinners"
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react"
+import { compressImage } from "../lib/ImageCompression"
 
 interface Props {
   item: Image
   onDelete: (id: ImageID) => void
-  onCompressImage: (image: Image) => Promise<File | undefined>
+  onUpdateImages: (image: Image) => void
 }
 
-export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onCompressImage }) => {
+export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onUpdateImages }) => {
+
   const { name, size, type } = item.image
+  const initialFormat = formatFiles.find(({ value }) => value === type) || formatFiles[0];
   const [isLoading, setIsLoading] = useState(false)
-  const [imageOptimized, setImageOptimized] = useState<File | null>(null)
+  const [imageOptimized, setImageOptimized] = useState<Image | null>(null)
+  const [imageFormat, setImageFormat] = useState(initialFormat)
 
   useEffect(() => {
     const compressImageAsync = async () => {
       setIsLoading(true);
-      const imageCompressed = await onCompressImage(item);
-      setImageOptimized(imageCompressed ?? item.image)
+      const imageCompressed = await compressImage({ imageFile: item.image, fileType: imageFormat.value });
+      if (!imageCompressed) return
+
+      const newExtension = imageFormat.value.split('/')[1]
+      const lastDotIndex = name.lastIndexOf(".");
+      const baseName = lastDotIndex !== -1 ? name.substring(0, lastDotIndex) : name;
+
+      const renamedFileImage = new File(
+        [imageCompressed],
+        `${baseName}.${newExtension}`,
+        { type: imageCompressed.type }
+      );
+
+      const currentImage = {
+        id: item.id,
+        image: renamedFileImage
+      }
+
+      onUpdateImages(currentImage)
+      setImageOptimized(currentImage)
       setIsLoading(false);
     };
     compressImageAsync()
-  }, [])
+  }, [imageFormat])
 
   const handleOnDownload = () => {
     if (!imageOptimized) return;
 
-    const url = URL.createObjectURL(imageOptimized);
+    const url = URL.createObjectURL(imageOptimized.image);
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = imageOptimized.name || "compressed-image.jpg";
+    link.download = imageOptimized.image.name || "";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }
 
-  const percentageOptimized = imageOptimized?.size && (
-    ((size - imageOptimized.size) / size) * 100
+  const percentageOptimized = imageOptimized?.image.size && (
+    ((size - imageOptimized.image.size) / size) * 100
   )
 
   return (
@@ -53,17 +76,42 @@ export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onCompressIm
               {
                 isLoading && <BounceLoader
                   className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                  color={'#4bff0a'}
+                  color={'#005520'}
                 />
               }
             </div>
           </div>
           <span className="text-start">{name.slice(0, 7)}...</span>
-          <span
-            className="text-sm py-1 px-2 rounded-full border-2 border-solid border-primary
-            dark:bg-white/30 bg-black/70 text-primary uppercase">
-            {type.split("/")[1]}
-          </span>
+          <Listbox value={imageFormat} onChange={setImageFormat}>
+            <ListboxButton
+              className='relative block w-fit py-1 pl-3 pr-5 text-left text-sm/6  
+                focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25
+                text-primary
+                border-2 border-solid border-primary rounded-full dark:bg-white/30 bg-black/70
+                '
+            >
+              {imageFormat.name}
+              <ChevronDown
+                class="group pointer-events-none absolute top-2.5 right-[2px] size-4"
+                aria-hidden="true"
+              />
+            </ListboxButton>
+            <ListboxOptions
+              anchor="bottom"
+              transition
+              className={'w-fit rounded-xl border border-white/5 [--anchor-gap:var(--spacing-1)] focus:outline-none transition duration-100 ease-in data-[leave]:data-[closed]:opacity-0 bg-black/90 text-dark-text_primary'}
+            >
+              {formatFiles.map((option, index) => (
+                <ListboxOption
+                  key={index}
+                  value={option}
+                  className="group flex cursor-default items-center gap-2 rounded-lg py-1 px-3 select-none data-[focus]:bg-primary/50"
+                >
+                  <div className="text-sm/6">{option.name}</div>
+                </ListboxOption>
+              ))}
+            </ListboxOptions>
+          </Listbox>
         </div>
 
         <div className="flex items-center justify-end gap-6">
@@ -74,12 +122,12 @@ export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onCompressIm
               {formatFileSize(size)}
               <div className="absolute top-1/2  w-full h-[1px] shadow-md rounded-full z-10 bg-red-600" />
             </span>
-            <span className="font-semibold">{imageOptimized?.size && formatFileSize(imageOptimized?.size)}</span>
+            <span className="font-semibold">{imageOptimized?.image.size && formatFileSize(imageOptimized?.image.size)}</span>
           </div>
 
           <span
             className="text-sm py-1 px-2 rounded-full border-2 border-solid border-primary
-            dark:bg-white/30 bg-black/70 text-primary">
+              dark:bg-white/30 bg-black/70 text-primary">
             {(percentageOptimized)?.toFixed(2)}%
           </span>
 
