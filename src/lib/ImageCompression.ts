@@ -1,15 +1,17 @@
 import imageCompression from 'browser-image-compression'
 import { Image } from '../types/types';
 
-interface OptionsImage {
+export interface OptionsImage {
   imageFile: File,
+  fileType?: string
 }
 
-export const compressImage = async ({ imageFile }: OptionsImage) => {
+export const compressImage = async ({ imageFile, fileType }: OptionsImage) => {
   const options = {
     maxSizeMB: 1,
     maxWidthOrHeight: 1920,
     useWebWorker: true,
+    fileType
   }
 
   try {
