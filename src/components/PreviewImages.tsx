@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Image, ImageID } from "../types/types";
 import { PreviewImageItem } from "./PreviewImagesItem";
 import { useState } from "react";
-import { Download } from "./Icons";
+import { ArrowRigth, Download } from "./Icons";
 import JSZip from "jszip";
 
 interface Props {
@@ -53,18 +53,17 @@ export const PreviewImagesList: React.FC<Props> = ({ images, handleOnDelete }) =
 
   return (
     <>
-      <section className="h-[500px] py-4  dark:bg-dark-primary_variant1 mt-8 
-        flex flex-col items-center justify-start gap-6 text-black overflow-hidden transition-shadow duration-300
-        rounded-lg shadow-primary shadow-sm px-10"
+      <section className="h-[500px] py-4 bg-[#fefefe] dark:bg-black/90 mt-16 
+        flex flex-col items-center justify-start gap-6 text-black overflow-hidden transition duration-300
+        rounded-lg shadow-primary shadow-sm px-10 group hover:-translate-y-2"
       >
         <div className="w-full flex justify-end">
           <button
             onClick={handleDowmloadAllImages}
-            className="flex items-center gap-2
-            py-2 px-4 rounded-md border-2 border-solid 
-            bg-black/60 text-primary border-primary hover:bg-primary/70 
-            dark:hover:text-dark-text_primary hover:text-light-text_primary 
-            dark:hover:border-dark-text_primary hover:border-light-text_primary"
+            className="flex items-center justify-between gap-2 px-4 py-2
+            border-2 border-solid border-primary rounded-md
+          text-primary bg-black/80 hover:bg-primary hover:border-transparent 
+          hover:text-black dark:hover:text-black dark:hover:bg-primary dark:bg-transparent"
           >
             <Download class="size-5" />Descargar en zip
           </button>
@@ -83,13 +82,15 @@ export const PreviewImagesList: React.FC<Props> = ({ images, handleOnDelete }) =
         </ul>
         <button
           className="flex items-center justify-between gap-2 px-4 py-2
-          border-2 border-solid border-primary rounded-full
-          text-primary hover:bg-primary hover:border-transparent 
-          dark:hover:text-dark-text_primary hover:text-light-text_primary"
+            border-2 border-solid border-primary rounded-full
+          text-primary hover:bg-primary hover:border-transparent bg-black/80  
+          hover:text-black dark:hover:bg-primary dark:hover:text-black dark:bg-transparent"
           onClick={handleGoOptimize}
         >
           Continuar
+          <ArrowRigth class="size-5" />
         </button>
+
       </section>
     </>
   )
