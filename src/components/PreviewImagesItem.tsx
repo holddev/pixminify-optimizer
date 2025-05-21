@@ -68,7 +68,7 @@ export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onUpdateImag
 
   return (
     <>
-      <li className=" rounded-md border-b-[1px] py-1 px-2 border-solid flex items-center justify-between hover:bg-primary/40">
+      <li className=" rounded-md border-b-[1px] py-1 px-2 border-solid flex items-center justify-between hover:bg-primary/20">
         <div className="flex items-center justify-start gap-x-4">
           <div className="relative size-16">
             <img className="w-full h-full object-cover object-center" src={URL.createObjectURL(item.image)} alt={name} />
@@ -87,7 +87,7 @@ export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onUpdateImag
               className='relative block w-fit py-1 pl-3 pr-5 text-left text-sm/6  
                 focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25
                 text-primary
-                border-2 border-solid border-primary rounded-full dark:bg-white/30 bg-black/70
+                border-2 border-solid border-primary rounded-full dark:bg-white/30 bg-black/80
                 '
             >
               {imageFormat.name}
@@ -120,14 +120,14 @@ export const PreviewImageItem: React.FC<Props> = ({ item, onDelete, onUpdateImag
               className="relative dark:text-dark-text_primary/60 text-light-text_primary/60"
             >
               {formatFileSize(size)}
-              <div className="absolute top-1/2  w-full h-[1px] shadow-md rounded-full z-10 bg-red-600" />
+              <div className="absolute top-1/2  w-full h-[2px] shadow-md rounded-full z-10 bg-red-600" />
             </span>
             <span className="font-semibold">{imageOptimized?.image.size && formatFileSize(imageOptimized?.image.size)}</span>
           </div>
 
           <span
-            className="text-sm py-1 px-2 rounded-full border-2 border-solid border-primary
-              dark:bg-white/30 bg-black/70 text-primary">
+            className="text-sm py-1 px-2 rounded-full border-2 border-solid border-primary/50
+              dark:bg-white/20 bg-black/20 dark:text-primary/80 text-black/80">
             {(percentageOptimized)?.toFixed(2)}%
           </span>
 
