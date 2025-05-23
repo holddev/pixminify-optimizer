@@ -1,15 +1,21 @@
 import { Link, useLocation } from "react-router-dom";
-import { Image } from "../types/types";
-import { Exit, Triangle } from "../components/Icons";
+import { CompressionSettings, Image } from "../types/types";
+import { Download, Exit, ImageIcon, Triangle } from "../components/Icons";
 import { useRef, useState } from "react";
 import { MainGallery } from "../components/MainGallery";
 import { TumbnailCarrousel } from "../components/TumbnailCarousel";
+import { EditControls } from "../components/EditControls";
+import { compressImage } from "../lib/ImageCompression";
+import { OptimizationStats } from "../components/OptimizationStats";
+import JSZip from "jszip";
+
 
 export const Optimize = () => {
   const location = useLocation();
-  const images: Image[] = location.state || [];
+  const [images, setImages] = useState<Image[]>(location.state || [])
   const [currentIndex, setCurrentIndex] = useState<number>(0)
   const galeryDialog = useRef<HTMLDialogElement>(null)
+  const currentItem = images[currentIndex]
 
 
   const handleChangeImage = (direction: 'prev' | 'next') => {
@@ -24,44 +30,127 @@ export const Optimize = () => {
     setCurrentIndex(index)
   }
 
+  const handleEditImage = async ({ format, saveMetadata }: CompressionSettings) => {
+    const imageCompressed = await compressImage(
+      {
+        imageFile: currentItem.image,
+        settings: {
+          format,
+          saveMetadata
+        }
+      }
+    );
+    const currentImage = {
+      id: currentItem.id,
+      image: currentItem.image,
+      compressedImage: imageCompressed
+    }
+    const compressed = currentImage.compressedImage
+    if (!compressed) return
+
+    setImages(prevImages => {
+      const updatedImages = [...prevImages];
+      const updatedImage = { ...updatedImages[currentIndex] };
+
+      updatedImage.settings = {
+        ...updatedImage.settings,
+        format,
+        saveMetadata,
+      };
+
+
+      const newExtension = compressed.type.split('/')[1]
+      const lastDotIndex = compressed.name.lastIndexOf(".");
+      const baseName = lastDotIndex !== -1 ? compressed.name.substring(0, lastDotIndex) : compressed.name;
+
+      const renamedFileImage = new File(
+        [compressed],
+        `${baseName}.${newExtension}`,
+        { type: compressed.type }
+      );
+
+      updatedImage.compressedImage = renamedFileImage;
+
+      updatedImages[currentIndex] = updatedImage;
+
+      return updatedImages;
+    });
+
+  }
+
+  const handleDownloadAllImages = async () => {
+    const zip = new JSZip()
+    images.forEach((image) => {
+      if (!image.compressedImage) return
+      zip.file(image.compressedImage?.name, image.compressedImage);
+    });
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+
+    const zipUrl = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = zipUrl;
+    a.download = "images-pixminify.zip";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(zipUrl);
+  }
 
   return (
-    <div className="w-full h-[100vh] overflow-hidden relative">
+    <div className="w-full h-screen overflow-hidden relative">
       <Link to={'/'} className="absolute z-10 top-4 left-4">
         <Exit class="size-8 hover:rotate-90 hover:scale-105 opacity-60 hover:opacity-100 transition-all duration-500" />
       </Link>
 
       <button
         onClick={() => handleChangeImage("prev")}
-        className={`active:scale-110 absolute bg-primary p-2 rounded-full top-2/4 left-4 z-10 -translate-y-1/2 transition-transform duration-300
+        className={`active:scale-110 absolute bg-[#fefefe] text-primary/70 border border-primary 
+          p-2 rounded-full shadow-md top-1/4 left-4 z-10 translate-y-full cursor-pointer
+          transition-transform duration-300 hover:bg-primary/70 hover:text-[#fefefe]
           ${currentIndex === 0 && 'opacity-50 cursor-not-allowed'}
         `}
         disabled={currentIndex === 0}
       >
-        <Triangle class="size-12 -rotate-90" />
+        <Triangle class="size-12 -rotate-90 -translate-x-[2px]" />
       </button>
 
       <button
         onClick={() => handleChangeImage("next")}
-        className={`active:scale-110 absolute bg-primary p-2 rounded-full top-2/4 right-4 z-10 -translate-y-1/2 transition-transform duration-300
-          ${currentIndex === images.length - 1 && 'opacity-50 cursor-not-allowed'}  
+        className={`active:scale-110 absolute bg-[#fefefe] text-primary/70 border border-primary 
+          p-2 rounded-full shadow-md top-1/4 right-4 z-10 translate-y-full cursor-pointer
+          transition-transform duration-300 hover:bg-primary/70 hover:text-[#fefefe]
+          ${currentIndex === images.length - 1 && 'opacity-50 cursor-not-allowed'}
         `}
         disabled={currentIndex === images.length - 1}
       >
         <Triangle class="size-12 rotate-90" />
       </button>
 
-      <button
-        className="
-          absolute top-4 right-4 z-10 py-2 px-4
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <button
+          className="
+          py-2 px-4 flex gap-1 items-center
           bg-black text-white font-semibold rounded-lg shadow-lg 
           hover:text-primary hover:shadow-xl active:scale-95 
           transition-all duration-300
         "
-        onClick={() => { galeryDialog.current?.showModal() }}
-      >
-        Ver Imágenes
-      </button>
+          onClick={() => { galeryDialog.current?.showModal() }}
+        >
+          <ImageIcon class="size-4" /> Ver todo
+        </button>
+        <button
+          className="
+          py-2 px-4 flex gap-1 items-center
+          bg-black text-white font-semibold rounded-lg shadow-lg 
+          hover:text-primary hover:shadow-xl active:scale-95 
+          transition-all duration-300
+        "
+          onClick={handleDownloadAllImages}
+        >
+          <Download class="size-4" />
+          Guardar todo
+        </button>
+      </div>
 
       <dialog
         className="
@@ -119,17 +208,27 @@ export const Optimize = () => {
         </section>
       </dialog>
 
-
-      <MainGallery
-        images={images}
-        currentIndex={currentIndex}
+      <OptimizationStats
+        image={currentItem}
       />
 
-      <TumbnailCarrousel
-        images={images}
-        currentIndex={currentIndex}
-        onTumbnailClick={handleGoToImage}
+      <EditControls
+        image={currentItem}
+        onApply={handleEditImage}
       />
+
+      <div className="h-full flex flex-col">
+        <MainGallery
+          images={images}
+          currentIndex={currentIndex}
+        />
+
+        <TumbnailCarrousel
+          images={images}
+          currentIndex={currentIndex}
+          onTumbnailClick={handleGoToImage}
+        />
+      </div>
 
     </div >
 
