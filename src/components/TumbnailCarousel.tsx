@@ -18,9 +18,9 @@ export const TumbnailCarrousel: React.FC<Props> = ({ images, currentIndex, onTum
   };
 
   return (
-    <div className="h-[20vh] w-full bg-primary flex items-center justify-center ">
+    <div className="h-[110px] w-full bg-black/90 rounded-md backdrop-blur-md flex items-center justify-center overflow-hidden">
       <ul
-        className="h-full w-full flex items-center justify-start gap-1 overflow-x-scroll"
+        className="h-full w-full flex items-center justify-start gap-1 overflow-x-auto px-3"
         ref={scrollContainerRef}
         onWheel={handleScroll}
       >
@@ -32,13 +32,15 @@ export const TumbnailCarrousel: React.FC<Props> = ({ images, currentIndex, onTum
               onClick={() => { onTumbnailClick(index) }}
             >
               <img
-                className={`h-full w-16 object-center object-contain 
+                className={`h-16 w-16 object-center object-contain 
                 ${index === currentIndex ? 'grayscale-0 scale-110' : 'grayscale'}
                 hover:grayscale-0 transition-all duration-500
                 hover:scale-110`}
                 src={URL.createObjectURL(item.image)}
                 alt={item.image.name}
               />
+              {index}
+              {currentIndex}
             </button>
           </li>
         ))}
