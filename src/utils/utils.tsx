@@ -1,3 +1,5 @@
+import { CompressionSettings } from "../types/types";
+
 export const formatFileSize = (sizeInBytes: number) => {
   if (sizeInBytes < 1024) return `${sizeInBytes} bytes`;
   const kb = sizeInBytes / 1024;
@@ -7,10 +9,21 @@ export const formatFileSize = (sizeInBytes: number) => {
 }
 
 export const formatFiles = [
-  { name: 'WEBP', value: 'image/webp' },
-  { name: 'JPEG', value: 'image/jpeg' },
-  { name: 'PNG', value: 'image/png' },
-  { name: 'BMP', value: 'image/bmp' },
+  { name: 'WEBP', value: 'webp' as const },
+  { name: 'JPEG', value: 'jpeg' as const },
+  { name: 'PNG', value: 'png' as const },
+  { name: 'BMP', value: 'bmp' as const },
 ]
+
+export const getMimeType = (format: CompressionSettings['format']) => {
+  switch (format) {
+    case 'webp': return 'image/webp';
+    case 'jpeg': return 'image/jpeg';
+    case 'png': return 'image/png';
+    case 'bmp': return 'image/bmp';
+    default: return 'image/jpeg';
+  }
+}
+
 
 export const MAX_LENGTH_IMAGES = 20
