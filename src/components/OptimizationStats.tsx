@@ -35,7 +35,7 @@ export const OptimizationStats = ({ image }: Props) => {
       <div className="grid grid-cols-2 gap-2 font-medium text-white/80">
         {
           fileSizes.map(({ label, value, color }) => (
-            <div className="bg-white/10 p-2 rounded-lg flex flex-col items-center justify-center">
+            <div key={label} className="bg-white/10 p-2 rounded-lg flex flex-col items-center justify-center">
               <span className="text-xs uppercase">{label}</span>
               <span className={`text-sm font - bold ${color} `}>
                 {formatFileSize(value)}
