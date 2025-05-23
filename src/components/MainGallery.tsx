@@ -1,4 +1,5 @@
 import { Image } from "../types/types"
+import { BeforeAfterImage } from "./BeforeAfterImage"
 
 interface Props {
   images: Image[]
@@ -7,21 +8,18 @@ interface Props {
 export const MainGallery: React.FC<Props> = ({ images, currentIndex }) => {
   return (
     <>
-      <ul className="relative w-full h-[80%] bg-red-500 flex items-center justify-center overflow-hidden">
+      <ul className="relative w-full h-full bg-white flex items-center justify-center overflow-hidden">
         {images.map((item, index) => (
           <li
             key={index}
             className={`
-              absolute w-auto h-full 
+              absolute w-auto h-full p-10
               transition-opacity duration-300 ease-in-out
               ${currentIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}
             `}
           >
-            <img
-              className="object-cover w-full h-full"
-              src={URL.createObjectURL(item.image)}
-              alt={item.image.name}
-              loading="lazy"
+            <BeforeAfterImage
+              item={item}
             />
           </li>
         ))}
